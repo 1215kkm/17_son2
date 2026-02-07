@@ -333,6 +333,55 @@ export function SettingsIcon({ size = 24, color = 'currentColor', style }: IconP
   );
 }
 
+export function GumIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <path d="M4 12C4 8 7 4 12 4C17 4 20 8 20 12" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <path d="M6 12V16C6 18 8 20 12 20C16 20 18 18 18 16V12" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="9" cy="13" r="1" fill={color} />
+      <circle cx="15" cy="13" r="1" fill={color} />
+    </svg>
+  );
+}
+
+export function ShieldIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 12L11 14L15 10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function AlertTriangleIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <path d="M10.29 3.86L1.82 18A2 2 0 003.64 21H20.36A2 2 0 0022.18 18L13.71 3.86A2 2 0 0010.29 3.86Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 9V13" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="1" fill={color} />
+    </svg>
+  );
+}
+
+export function RefreshIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <path d="M1 4V10H7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3.51 15A9 9 0 105.64 5.64L1 10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function InfoIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="2" />
+      <path d="M12 16V12" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="8" r="1" fill={color} />
+    </svg>
+  );
+}
+
 export function EditIcon({ size = 24, color = 'currentColor', style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
@@ -377,6 +426,11 @@ const Icons = {
   Comment: CommentIcon,
   Settings: SettingsIcon,
   Edit: EditIcon,
+  Gum: GumIcon,
+  Shield: ShieldIcon,
+  AlertTriangle: AlertTriangleIcon,
+  Refresh: RefreshIcon,
+  Info: InfoIcon,
 };
 
 export default Icons;

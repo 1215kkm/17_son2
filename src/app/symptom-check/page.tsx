@@ -258,7 +258,7 @@ export default function SymptomCheckPage() {
 
   return (
     <div style={styles.wrapper}>
-      <Header title="증상 확인" showBack onBack={handleBack} />
+      <Header title="증상 확인" showBack showNotification={false} showProfile={false} onBack={handleBack} />
 
       <div style={styles.content}>
         {/* Progress bar */}

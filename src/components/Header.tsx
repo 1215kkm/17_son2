@@ -9,6 +9,7 @@ interface HeaderProps {
   showNotification?: boolean;
   showProfile?: boolean;
   onBack?: () => void;
+  rightAction?: React.ReactNode;
 }
 
 export default function Header({
@@ -17,6 +18,7 @@ export default function Header({
   showNotification = true,
   showProfile = true,
   onBack,
+  rightAction,
 }: HeaderProps) {
   const styles: Record<string, React.CSSProperties> = {
     header: {
@@ -147,6 +149,7 @@ export default function Header({
 
       {/* Right section */}
       <div style={styles.rightSection}>
+        {rightAction}
         {showNotification && (
           <button style={styles.iconButton} aria-label="알림">
             <BellIcon size={22} color="var(--color-text-secondary)" />

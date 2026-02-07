@@ -164,6 +164,8 @@ export default function NotificationsPage() {
       <Header
         title="알림"
         showBack
+        showNotification={false}
+        showProfile={false}
         rightAction={
           unreadCount > 0 ? (
             <button
