@@ -16,12 +16,12 @@
   --color-inactive: #B0BEC5;
 
   /* 텍스트 */
-  --color-text-primary: #1A1A2E;
+  --color-text-primary: #111;
   --color-text-secondary: #546E7A;
   --color-text-tertiary: #90A4AE;
 
   /* 배경 */
-  --color-background: #F5F7FA;
+  --color-background: #ffffff;
   --color-background-white: #FFFFFF;
   --color-background-card: #FFFFFF;
 
@@ -41,6 +41,8 @@
   --spacing-lg: 16px;
   --spacing-xl: 20px;
   --spacing-xxl: 24px;
+  --spacing-xxl2: 28px;
+  --spacing-xxl3: 50px;
 
   /* 보더 라디우스 */
   --radius-sm: 4px;
@@ -61,6 +63,7 @@
   --font-xxl: 20px;
   --font-title: 22px;
   --font-hero: 28px;
+  --font-hero2: 40px;
 
   /* 그림자 */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -129,7 +132,7 @@ input, textarea, select {
 
 /* 페이지 컨테이너 (헤더 + 탭바 고려) */
 .page-container {
-  padding-top: var(--header-height);
+  padding-top: var(--spacing-xxl);
   padding-bottom: var(--tabbar-height);
   min-height: 100vh;
 }
