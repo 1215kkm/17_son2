@@ -500,7 +500,7 @@ export default function SearchPage() {
         </div>
       </main>
 
-      <TabBar items={tabItems} onNavigate={(href) => router.push(href)} />
+      <TabBar />
     </>
   );
 }

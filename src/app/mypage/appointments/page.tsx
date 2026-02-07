@@ -176,7 +176,7 @@ export default function AppointmentsPage() {
 
   return (
     <>
-      <Header title="예약 내역" showBack />
+      <Header title="예약 내역" showBack showNotification={false} showProfile={false} />
 
       <main className="page-container-no-tab" style={{ background: 'var(--color-background)' }}>
         {/* ── 탭 필터 ── */}

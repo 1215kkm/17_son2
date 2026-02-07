@@ -554,7 +554,7 @@ export default function SymptomResultPage() {
   if (!answers || !analysis) {
     return (
       <div style={styles.wrapper}>
-        <Header title="증상 확인 결과" showBack />
+        <Header title="증상 확인 결과" showBack showNotification={false} showProfile={false} onBack={() => router.back()} />
         <div
           style={{
             ...styles.content,
