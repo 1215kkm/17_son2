@@ -1,79 +1,164 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
-import { ChevronLeftIcon } from './Icons';
+import { ArrowLeftIcon, BellIcon, UserIcon } from './Icons';
 
 interface HeaderProps {
-  title: string;
+  title?: string;
   showBack?: boolean;
+  showNotification?: boolean;
+  showProfile?: boolean;
   onBack?: () => void;
-  rightAction?: React.ReactNode;
 }
 
-export default function Header({ title, showBack = false, onBack, rightAction }: HeaderProps) {
-  const router = useRouter();
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      router.back();
-    }
+export default function Header({
+  title,
+  showBack = false,
+  showNotification = true,
+  showProfile = true,
+  onBack,
+}: HeaderProps) {
+  const styles: Record<string, React.CSSProperties> = {
+    header: {
+      position: 'fixed',
+      top: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%',
+      maxWidth: 'var(--max-width)',
+      height: 'var(--header-height)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 var(--spacing-lg)',
+      background: 'var(--color-background-white)',
+      borderBottom: '1px solid var(--color-border-light)',
+      zIndex: 200,
+    },
+    leftSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      minWidth: '80px',
+    },
+    backButton: {
+      width: 36,
+      height: 36,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--radius-full)',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: 0,
+    },
+    logoContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+    },
+    logoText: {
+      fontSize: 'var(--font-lg)',
+      fontWeight: 700,
+      color: 'var(--color-text-primary)',
+      letterSpacing: '-0.3px',
+    },
+    centerTitle: {
+      position: 'absolute' as const,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      fontSize: 'var(--font-lg)',
+      fontWeight: 600,
+      color: 'var(--color-text-primary)',
+      whiteSpace: 'nowrap' as const,
+    },
+    rightSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      minWidth: '80px',
+      justifyContent: 'flex-end',
+    },
+    iconButton: {
+      width: 36,
+      height: 36,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--radius-full)',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: 0,
+      position: 'relative' as const,
+    },
+    profileButton: {
+      width: 36,
+      height: 36,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 'var(--radius-full)',
+      background: 'var(--color-primary-bg)',
+      border: 'none',
+      cursor: 'pointer',
+      padding: 0,
+    },
+    notificationDot: {
+      position: 'absolute' as const,
+      top: 6,
+      right: 6,
+      width: 7,
+      height: 7,
+      borderRadius: '50%',
+      background: 'var(--color-danger)',
+      border: '1.5px solid white',
+    },
   };
 
   return (
-    <header
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: 'var(--max-width)',
-        height: 'var(--header-height)',
-        background: 'var(--color-background-white)',
-        borderBottom: '1px solid var(--color-border-light)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '0 var(--spacing-lg)',
-        zIndex: 200,
-      }}
-    >
-      {showBack && (
-        <button
-          onClick={handleBack}
-          style={{
-            position: 'absolute',
-            left: 'var(--spacing-sm)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 40,
-            height: 40,
-            borderRadius: 'var(--radius-full)',
-            color: 'var(--color-text-primary)',
-          }}
-          aria-label="뒤로 가기"
-        >
-          <ChevronLeftIcon size={24} />
-        </button>
-      )}
-      <h1
-        style={{
-          fontSize: 'var(--font-lg)',
-          fontWeight: 600,
-          color: 'var(--color-text-primary)',
-        }}
-      >
-        {title}
-      </h1>
-      {rightAction && (
-        <div style={{ position: 'absolute', right: 'var(--spacing-lg)' }}>
-          {rightAction}
-        </div>
-      )}
+    <header style={styles.header}>
+      {/* Left section */}
+      <div style={styles.leftSection}>
+        {showBack ? (
+          <button
+            style={styles.backButton}
+            onClick={onBack}
+            aria-label="뒤로가기"
+          >
+            <ArrowLeftIcon size={22} color="var(--color-text-primary)" />
+          </button>
+        ) : (
+          <div style={styles.logoContainer}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2C9.5 2 7.5 3.5 7 5.5C6.5 7.5 5.5 9 4.5 11C3.5 13 3 15 4 17C5 19 6 21 8 21C9 21 10 20 10.5 18.5C11 17 11.5 16 12 16C12.5 16 13 17 13.5 18.5C14 20 15 21 16 21C18 21 19 19 20 17C21 15 20.5 13 19.5 11C18.5 9 17.5 7.5 17 5.5C16.5 3.5 14.5 2 12 2Z"
+                fill="var(--color-primary)"
+              />
+            </svg>
+            <span style={styles.logoText}>DENTAL GUIDE</span>
+          </div>
+        )}
+      </div>
+
+      {/* Center title */}
+      {title && <span style={styles.centerTitle}>{title}</span>}
+
+      {/* Right section */}
+      <div style={styles.rightSection}>
+        {showNotification && (
+          <button style={styles.iconButton} aria-label="알림">
+            <BellIcon size={22} color="var(--color-text-secondary)" />
+            <span style={styles.notificationDot} />
+          </button>
+        )}
+        {showProfile && (
+          <button style={styles.profileButton} aria-label="내 정보">
+            <UserIcon size={20} color="var(--color-primary)" />
+          </button>
+        )}
+      </div>
     </header>
   );
 }

@@ -157,6 +157,20 @@ export function ArrowRightIcon({ size = 24, color = 'currentColor', style }: Ico
   );
 }
 
+export function ChevronLeftIcon({ size = 24, color = 'currentColor', style }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+      <path
+        d="M15 18L9 12L15 6"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function ChevronRightIcon({ size = 24, color = 'currentColor', style }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
@@ -350,6 +364,7 @@ const Icons = {
   User: UserIcon,
   ArrowLeft: ArrowLeftIcon,
   ArrowRight: ArrowRightIcon,
+  ChevronLeft: ChevronLeftIcon,
   ChevronRight: ChevronRightIcon,
   Star: StarIcon,
   Calendar: CalendarIcon,
