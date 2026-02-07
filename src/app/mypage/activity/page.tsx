@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Card from '@/components/Card';
@@ -132,7 +132,7 @@ const mockBookmarks = [
 /* ────────────────────────────────────────
    내 활동 페이지
 ──────────────────────────────────────── */
-export default function ActivityPage() {
+function ActivityContent() {
   const searchParams = useSearchParams();
   const defaultTab = (searchParams.get('tab') as TabKey) || 'posts';
   const [activeTab, setActiveTab] = useState<TabKey>(defaultTab);
@@ -519,5 +519,13 @@ export default function ActivityPage() {
         <div style={{ height: 40 }} />
       </main>
     </>
+  );
+}
+
+export default function ActivityPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--color-background-white)' }} />}>
+      <ActivityContent />
+    </Suspense>
   );
 }

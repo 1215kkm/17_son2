@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { Suspense, useMemo, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Button from '@/components/Button';
@@ -530,7 +530,7 @@ function ScoreCircle({ score, maxScore, riskLevel }: { score: number; maxScore: 
   );
 }
 
-export default function SymptomResultPage() {
+function SymptomResultContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [answers, setAnswers] = useState<Answers | null>(null);
@@ -583,7 +583,7 @@ export default function SymptomResultPage() {
 
   return (
     <div style={styles.wrapper}>
-      <Header title="증상 확인 결과" showBack />
+      <Header title="증상 확인 결과" showBack showNotification={false} showProfile={false} onBack={() => router.back()} />
 
       <div style={styles.content}>
         {/* ── Result Summary Card ── */}
@@ -672,5 +672,32 @@ export default function SymptomResultPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function SymptomResultPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={styles.wrapper}>
+          <Header title="증상 확인 결과" showBack showNotification={false} showProfile={false} />
+          <div
+            style={{
+              ...styles.content,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '60vh',
+            }}
+          >
+            <p style={{ fontSize: 'var(--font-md)', color: 'var(--color-text-tertiary)' }}>
+              결과를 불러오는 중...
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <SymptomResultContent />
+    </Suspense>
   );
 }
