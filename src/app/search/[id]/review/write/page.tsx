@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { StarIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 /* ────────────────────────────────────────
    Treatment Types
@@ -28,12 +29,42 @@ const treatmentTypes = [
 ──────────────────────────────────────── */
 export default function WriteReviewPage() {
   const router = useRouter();
+  const params = useParams();
+  const clinicId = params.id as string;
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedTreatment, setSelectedTreatment] = useState('');
   const [reviewText, setReviewText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const isValid = rating > 0 && selectedTreatment && reviewText.trim().length >= 10;
+
+  const handleSubmit = async () => {
+    if (!isValid || submitting) return;
+
+    setSubmitting(true);
+
+    try {
+      const { error } = await supabase.from('reviews').insert({
+        clinic_id: clinicId,
+        author: '익명',
+        rating,
+        treatment: selectedTreatment,
+        content: reviewText,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      router.back();
+    } catch (err) {
+      console.error('리뷰 등록 실패:', err);
+      alert('리뷰 등록에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <>
@@ -209,14 +240,11 @@ export default function WriteReviewPage() {
           variant="primary"
           size="lg"
           fullWidth
-          disabled={!isValid}
-          onClick={() => {
-            alert('리뷰가 등록되었습니다!');
-            router.back();
-          }}
+          disabled={!isValid || submitting}
+          onClick={handleSubmit}
           style={{ borderRadius: 'var(--radius-lg)' }}
         >
-          등록
+          {submitting ? '등록 중...' : '등록'}
         </Button>
       </div>
     </>

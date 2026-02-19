@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import { ArrowLeftIcon, CalendarIcon, ToothIcon, CheckIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 // ── Types ──────────────────────────────────────────────
 interface FormData {
@@ -77,6 +78,7 @@ export default function AddRecordPage() {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const updateField = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -103,12 +105,30 @@ export default function AddRecordPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
-    if (validate()) {
-      // In a real app, this would save to a database
-      router.push('/records');
+    if (!validate()) return;
+    if (submitting) return;
+
+    setSubmitting(true);
+
+    const { error } = await supabase.from('records').insert({
+      visit_date: formData.visitDate,
+      clinic_name: formData.clinicName.trim(),
+      treatment_type: formData.treatmentType,
+      treated_teeth: formData.treatedTeeth,
+      memo: formData.memo,
+      next_visit_date: formData.nextVisitDate || null,
+    });
+
+    if (error) {
+      console.error('Failed to insert record:', error);
+      alert('저장에 실패했습니다. 다시 시도해주세요.');
+      setSubmitting(false);
+      return;
     }
+
+    router.push('/records');
   };
 
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -132,10 +152,8 @@ export default function AddRecordPage() {
       {/* Header */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 'var(--max-width)',
           height: 'var(--header-height)',
@@ -508,8 +526,9 @@ export default function AddRecordPage() {
             size="lg"
             fullWidth
             onClick={handleSubmit}
+            disabled={submitting}
           >
-            저장
+            {submitting ? '저장 중...' : '저장'}
           </Button>
         </div>
       </div>

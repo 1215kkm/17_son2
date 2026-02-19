@@ -1171,10 +1171,8 @@ export default function TreatmentDetailPage() {
       <div className="page-container-no-tab">
         <header
           style={{
-            position: 'fixed',
+            position: 'sticky',
             top: 0,
-            left: '50%',
-            transform: 'translateX(-50%)',
             width: '100%',
             maxWidth: 'var(--max-width)',
             height: 'var(--header-height)',
@@ -1264,10 +1262,8 @@ export default function TreatmentDetailPage() {
       {/* Header */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 'var(--max-width)',
           height: 'var(--header-height)',

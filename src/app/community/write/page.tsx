@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 /* ────────────────────────────────────────
    카테고리 옵션
@@ -40,12 +41,32 @@ export default function WritePage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const canSubmit = selectedCategory && title.trim() && content.trim();
+  const canSubmit = selectedCategory && title.trim() && content.trim() && !submitting;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!canSubmit) return;
-    // 실제 환경에서는 API 호출
+
+    const categoryOption = categoryOptions.find((c) => c.id === selectedCategory);
+    if (!categoryOption) return;
+
+    setSubmitting(true);
+
+    const { error } = await supabase.from('posts').insert({
+      category: categoryOption.id,
+      category_label: categoryOption.label,
+      title: title.trim(),
+      content: content.trim(),
+      author: '익명',
+    });
+
+    if (error) {
+      alert('게시글 등록에 실패했습니다. 다시 시도해주세요.');
+      setSubmitting(false);
+      return;
+    }
+
     router.push('/community');
   };
 
@@ -54,10 +75,8 @@ export default function WritePage() {
       {/* ── 헤더 ── */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 'var(--max-width)',
           height: 'var(--header-height)',
@@ -101,6 +120,7 @@ export default function WritePage() {
 
         <button
           onClick={handleSubmit}
+          disabled={!canSubmit}
           style={{
             fontSize: 'var(--font-base)',
             fontWeight: 600,
@@ -110,9 +130,10 @@ export default function WritePage() {
             cursor: canSubmit ? 'pointer' : 'default',
             padding: '8px 4px',
             transition: 'color 0.2s ease',
+            opacity: submitting ? 0.5 : 1,
           }}
         >
-          등록
+          {submitting ? '등록 중...' : '등록'}
         </button>
       </header>
 

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import TabBar from '@/components/TabBar';
 import Card from '@/components/Card';
 import { CalendarIcon, ChevronRightIcon, PlusIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 // ── Types ──────────────────────────────────────────────
 interface VisitRecord {
@@ -31,52 +32,6 @@ const treatmentColors: Record<string, { bg: string; color: string }> = {
   기타: { bg: '#F5F5F5', color: 'var(--color-text-secondary)' },
 };
 
-// ── Mock Data ────────────────────────────────────────
-const mockRecords: VisitRecord[] = [
-  {
-    id: '1',
-    date: '2025.03.12',
-    treatmentType: '스케일링',
-    clinicName: '서울밝은치과',
-    description: '정기 스케일링 및 치석 제거 완료',
-  },
-  {
-    id: '2',
-    date: '2025.02.28',
-    treatmentType: '충치치료',
-    clinicName: '강남연세치과',
-    description: '좌측 하단 어금니 레진 충전 치료',
-  },
-  {
-    id: '3',
-    date: '2025.01.15',
-    treatmentType: '신경치료',
-    clinicName: '서울밝은치과',
-    description: '우측 상단 어금니 신경치료 1차',
-  },
-  {
-    id: '4',
-    date: '2024.12.20',
-    treatmentType: '스케일링',
-    clinicName: '미소드림치과',
-    description: '하반기 정기 스케일링',
-  },
-  {
-    id: '5',
-    date: '2024.11.05',
-    treatmentType: '기타',
-    clinicName: '강남연세치과',
-    description: '잇몸 염증 검진 및 약 처방',
-  },
-  {
-    id: '6',
-    date: '2024.09.18',
-    treatmentType: '충치치료',
-    clinicName: '서울밝은치과',
-    description: '우측 상단 소구치 인레이 치료',
-  },
-];
-
 // ── Filter classification ────────────────────────────
 function matchesFilter(record: VisitRecord, filter: FilterType): boolean {
   if (filter === '전체') return true;
@@ -90,9 +45,38 @@ function matchesFilter(record: VisitRecord, filter: FilterType): boolean {
 export default function RecordsPage() {
   const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<FilterType>('전체');
+  const [records, setRecords] = useState<VisitRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecords = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('records')
+        .select('*')
+        .order('visit_date', { ascending: false });
+
+      if (error) {
+        console.error('Failed to fetch records:', error);
+        setRecords([]);
+      } else {
+        const mapped: VisitRecord[] = (data ?? []).map((row) => ({
+          id: row.id,
+          date: (row.visit_date as string).replace(/-/g, '.'),
+          treatmentType: row.treatment_type,
+          clinicName: row.clinic_name,
+          description: row.memo ?? '',
+        }));
+        setRecords(mapped);
+      }
+      setLoading(false);
+    };
+
+    fetchRecords();
+  }, []);
 
   const filters: FilterType[] = ['전체', '스케일링', '충치치료', '신경치료', '기타'];
-  const filteredRecords = mockRecords.filter((r) => matchesFilter(r, activeFilter));
+  const filteredRecords = records.filter((r) => matchesFilter(r, activeFilter));
 
   return (
     <>
@@ -148,7 +132,29 @@ export default function RecordsPage() {
 
         {/* Records list */}
         <div style={{ padding: '0 var(--spacing-xl)', paddingBottom: '100px' }}>
-          {filteredRecords.length === 0 ? (
+          {loading ? (
+            /* Loading state */
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '60px 20px',
+                textAlign: 'center',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 'var(--font-md)',
+                  color: 'var(--color-text-tertiary)',
+                  lineHeight: 1.5,
+                }}
+              >
+                기록을 불러오는 중...
+              </p>
+            </div>
+          ) : filteredRecords.length === 0 ? (
             /* Empty state */
             <div
               style={{
