@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, BellIcon, UserIcon } from './Icons';
 
@@ -21,7 +21,7 @@ export default function Header({
   showBack = false,
   showNotification = true,
   showProfile = true,
-  hasUnread = true,
+  hasUnread,
   onBack,
   onNotificationClick,
   onProfileClick,
@@ -29,6 +29,28 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const handleBack = onBack || (() => router.back());
+
+  // Internal unread state derived from localStorage
+  const [internalHasUnread, setInternalHasUnread] = useState(true);
+
+  useEffect(() => {
+    const read = localStorage.getItem('notifications_read');
+    if (read === 'true') {
+      setInternalHasUnread(false);
+    }
+  }, []);
+
+  // Use the explicit prop if provided, otherwise fall back to internal state
+  const showUnreadDot = hasUnread !== undefined ? hasUnread : internalHasUnread;
+
+  const handleNotificationClick = () => {
+    // Mark notifications as read in localStorage and update internal state
+    localStorage.setItem('notifications_read', 'true');
+    setInternalHasUnread(false);
+    if (onNotificationClick) {
+      onNotificationClick();
+    }
+  };
   const styles: Record<string, React.CSSProperties> = {
     header: {
       position: 'sticky',
@@ -158,9 +180,9 @@ export default function Header({
       <div style={styles.rightSection}>
         {rightAction}
         {showNotification && (
-          <button style={styles.iconButton} aria-label="알림" onClick={onNotificationClick}>
+          <button style={styles.iconButton} aria-label="알림" onClick={handleNotificationClick}>
             <BellIcon size={22} color="var(--color-text-secondary)" />
-            {hasUnread && <span style={styles.notificationDot} />}
+            {showUnreadDot && <span style={styles.notificationDot} />}
           </button>
         )}
         {showProfile && (

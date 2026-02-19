@@ -69,7 +69,14 @@ export default function MagazineListPage() {
       <Header title="매거진" showBack showNotification={false} showProfile={false} />
 
       <main style={{ background: 'var(--color-background)', minHeight: '100vh' }}>
-        <div style={{ padding: 'var(--spacing-xl)' }}>
+        <div
+          style={{
+            padding: 'var(--spacing-xl)',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 'var(--spacing-md)',
+          }}
+        >
           {articles.map((article) => {
             const tagStyle = tagColors[article.tag] || { bg: '#F5F5F5', text: '#666' };
             return (
@@ -80,7 +87,6 @@ export default function MagazineListPage() {
                   background: 'var(--color-background-white)',
                   borderRadius: 'var(--radius-card)',
                   overflow: 'hidden',
-                  marginBottom: 'var(--spacing-lg)',
                   boxShadow: 'var(--shadow-card)',
                   cursor: 'pointer',
                 }}
@@ -89,20 +95,20 @@ export default function MagazineListPage() {
                 <div
                   style={{
                     width: '100%',
-                    height: 140,
+                    height: 100,
                     background: article.color,
                     display: 'flex',
                     alignItems: 'flex-end',
-                    padding: 14,
+                    padding: 10,
                   }}
                 >
                   <span
                     style={{
-                      fontSize: 'var(--font-xs)',
+                      fontSize: '10px',
                       fontWeight: 600,
                       color: 'white',
                       background: 'rgba(0,0,0,0.2)',
-                      padding: '3px 10px',
+                      padding: '2px 8px',
                       borderRadius: 'var(--radius-full)',
                     }}
                   >
@@ -111,39 +117,48 @@ export default function MagazineListPage() {
                 </div>
 
                 {/* Content */}
-                <div style={{ padding: '14px 16px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ padding: '10px 12px 12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                     <span
                       style={{
-                        fontSize: 'var(--font-xs)',
+                        fontSize: '10px',
                         fontWeight: 500,
                         color: tagStyle.text,
                         background: tagStyle.bg,
-                        padding: '2px 8px',
+                        padding: '1px 6px',
                         borderRadius: 'var(--radius-full)',
                       }}
                     >
                       {article.tag}
                     </span>
-                    <span style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-tertiary)' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--color-text-tertiary)' }}>
                       {article.date}
                     </span>
                   </div>
                   <h3
                     style={{
-                      fontSize: 'var(--font-lg)',
+                      fontSize: 'var(--font-md)',
                       fontWeight: 700,
                       color: 'var(--color-text-primary)',
-                      marginBottom: 6,
+                      marginBottom: 4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical' as const,
+                      overflow: 'hidden',
+                      lineHeight: 1.3,
                     }}
                   >
                     {article.title}
                   </h3>
                   <p
                     style={{
-                      fontSize: 'var(--font-sm)',
+                      fontSize: 'var(--font-xs)',
                       color: 'var(--color-text-secondary)',
-                      lineHeight: 1.5,
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical' as const,
+                      overflow: 'hidden',
                     }}
                   >
                     {article.description}
