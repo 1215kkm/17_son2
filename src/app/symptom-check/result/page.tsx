@@ -52,8 +52,8 @@ function parseAnswers(searchParams: URLSearchParams): Answers | null {
   const duration = searchParams.get('duration')?.split(',').filter(Boolean);
   const extraSymptom = searchParams.get('extraSymptom')?.split(',').filter(Boolean);
 
-  if (pain && painTrigger && gumSymptom && duration && extraSymptom) {
-    return { pain, painTrigger, gumSymptom, duration, extraSymptom };
+  if (pain && gumSymptom && duration && extraSymptom) {
+    return { pain, painTrigger: painTrigger || [], gumSymptom, duration, extraSymptom };
   }
 
   // Try localStorage fallback

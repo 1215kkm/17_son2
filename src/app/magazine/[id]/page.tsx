@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeftIcon, ChevronRightIcon } from '@/components/Icons';
 
@@ -99,6 +99,71 @@ export default function MagazineDetailPage() {
   const id = params.id as string;
 
   const article = magazineData[id];
+
+  /* ── Like state ── */
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+
+  /* ── Comments state ── */
+  const [comments, setComments] = useState<{ author: string; text: string; date: string }[]>([]);
+  const [commentText, setCommentText] = useState('');
+
+  /* ── Load likes from localStorage ── */
+  useEffect(() => {
+    if (!id) return;
+    try {
+      const stored = localStorage.getItem(`magazine_like_${id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setLiked(parsed.liked);
+        setLikeCount(parsed.count);
+      }
+    } catch {}
+  }, [id]);
+
+  /* ── Load comments from localStorage ── */
+  useEffect(() => {
+    if (!id) return;
+    try {
+      const stored = localStorage.getItem(`magazine_comments_${id}`);
+      if (stored) {
+        setComments(JSON.parse(stored));
+      }
+    } catch {}
+  }, [id]);
+
+  /* ── Like handler ── */
+  const handleLike = () => {
+    const newLiked = !liked;
+    const newCount = newLiked ? likeCount + 1 : likeCount - 1;
+    setLiked(newLiked);
+    setLikeCount(newCount);
+    localStorage.setItem(
+      `magazine_like_${id}`,
+      JSON.stringify({ liked: newLiked, count: newCount }),
+    );
+  };
+
+  /* ── Add comment handler ── */
+  const handleAddComment = () => {
+    if (!commentText.trim()) return;
+    const newComment = {
+      author: '익명',
+      text: commentText.trim(),
+      date: new Date()
+        .toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })
+        .replace(/\. /g, '.')
+        .replace(/\.$/, ''),
+    };
+    const updated = [...comments, newComment];
+    setComments(updated);
+    localStorage.setItem(`magazine_comments_${id}`, JSON.stringify(updated));
+    setCommentText('');
+  };
 
   /* ── Not found ── */
   if (!article) {
@@ -437,6 +502,222 @@ export default function MagazineDetailPage() {
             height: 1,
             background: 'var(--color-border)',
             marginTop: 'var(--spacing-xxl)',
+            marginBottom: 'var(--spacing-xxl)',
+          }}
+        />
+
+        {/* ── Like Button ── */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-md)',
+            marginBottom: 'var(--spacing-xxl)',
+          }}
+        >
+          <button
+            onClick={handleLike}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-sm)',
+              padding: '10px 20px',
+              borderRadius: 'var(--radius-full)',
+              border: liked
+                ? '1.5px solid var(--color-primary)'
+                : '1.5px solid var(--color-border)',
+              background: liked ? 'var(--color-primary-bg)' : 'var(--color-background-white)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            aria-label={liked ? '좋아요 취소' : '좋아요'}
+          >
+            {liked ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                     2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                     C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+                     c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                  fill="var(--color-primary)"
+                />
+              </svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3
+                     4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35
+                     l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3z"
+                  stroke="var(--color-text-tertiary)"
+                  strokeWidth="2"
+                  fill="none"
+                />
+              </svg>
+            )}
+            <span
+              style={{
+                fontSize: 'var(--font-md)',
+                fontWeight: 600,
+                color: liked ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              }}
+            >
+              좋아요 {likeCount > 0 ? likeCount : ''}
+            </span>
+          </button>
+        </div>
+
+        {/* ── Comments Section ── */}
+        <div
+          style={{
+            marginBottom: 'var(--spacing-xxl)',
+          }}
+        >
+          <h3
+            style={{
+              fontSize: 'var(--font-lg)',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              marginBottom: 'var(--spacing-lg)',
+            }}
+          >
+            댓글 {comments.length > 0 && `(${comments.length})`}
+          </h3>
+
+          {/* Comment input */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--spacing-sm)',
+              marginBottom: 'var(--spacing-xl)',
+            }}
+          >
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAddComment();
+              }}
+              placeholder="댓글을 입력하세요..."
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                fontSize: 'var(--font-md)',
+                border: '1.5px solid var(--color-border)',
+                borderRadius: 'var(--radius-card)',
+                outline: 'none',
+                color: 'var(--color-text-primary)',
+                background: 'var(--color-background)',
+                transition: 'border-color 0.2s ease',
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--color-border)';
+              }}
+            />
+            <button
+              onClick={handleAddComment}
+              disabled={!commentText.trim()}
+              style={{
+                padding: '12px 20px',
+                fontSize: 'var(--font-md)',
+                fontWeight: 600,
+                color: '#FFFFFF',
+                background: commentText.trim()
+                  ? 'var(--color-primary)'
+                  : 'var(--color-text-tertiary)',
+                border: 'none',
+                borderRadius: 'var(--radius-card)',
+                cursor: commentText.trim() ? 'pointer' : 'default',
+                transition: 'background 0.2s ease',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              등록
+            </button>
+          </div>
+
+          {/* Comments list */}
+          {comments.length === 0 ? (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: 'var(--spacing-xl) 0',
+                color: 'var(--color-text-tertiary)',
+                fontSize: 'var(--font-md)',
+              }}
+            >
+              아직 댓글이 없습니다. 첫 댓글을 남겨보세요!
+            </div>
+          ) : (
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--spacing-md)',
+              }}
+            >
+              {comments.map((comment, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: 'var(--spacing-lg)',
+                    background: 'var(--color-background)',
+                    borderRadius: 'var(--radius-card)',
+                    border: '1px solid var(--color-border-light)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 'var(--spacing-sm)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 'var(--font-md)',
+                        fontWeight: 600,
+                        color: 'var(--color-text-primary)',
+                      }}
+                    >
+                      {comment.author}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 'var(--font-sm)',
+                        color: 'var(--color-text-tertiary)',
+                      }}
+                    >
+                      {comment.date}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 'var(--font-md)',
+                      color: 'var(--color-text-secondary)',
+                      lineHeight: 1.6,
+                      wordBreak: 'keep-all',
+                      margin: 0,
+                    }}
+                  >
+                    {comment.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Divider before related link */}
+        <div
+          style={{
+            width: '100%',
+            height: 1,
+            background: 'var(--color-border)',
             marginBottom: 'var(--spacing-xxl)',
           }}
         />

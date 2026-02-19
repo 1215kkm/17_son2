@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Button from '@/components/Button';
@@ -54,7 +54,17 @@ const questions: Question[] = [
   },
 ];
 
-const TOTAL_STEPS = questions.length;
+/* ───────────────────── Conditional Flow ───────────────────── */
+
+function getVisibleQuestions(answers: Record<string, string[]>): Question[] {
+  return questions.filter((q) => {
+    // Skip painTrigger if user answered "없음" (no pain)
+    if (q.id === 'painTrigger' && answers.pain?.includes('없음')) {
+      return false;
+    }
+    return true;
+  });
+}
 
 /* ───────────────────────── Styles ───────────────────────── */
 
@@ -88,9 +98,9 @@ const styles = {
     borderRadius: 'var(--radius-full)',
     overflow: 'hidden' as const,
   },
-  progressBarFill: (step: number) => ({
+  progressBarFill: (step: number, totalSteps: number) => ({
     height: '100%',
-    width: `${((step + 1) / TOTAL_STEPS) * 100}%`,
+    width: `${((step + 1) / totalSteps) * 100}%`,
     background: 'var(--color-primary)',
     borderRadius: 'var(--radius-full)',
     transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -192,14 +202,16 @@ export default function SymptomCheckPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
 
-  const currentQuestion = questions[currentStep];
+  const visibleQuestions = useMemo(() => getVisibleQuestions(answers), [answers]);
+  const totalSteps = visibleQuestions.length;
+  const currentQuestion = visibleQuestions[currentStep];
   const currentAnswers = answers[currentQuestion.id] || [];
 
   /* ── Selection handlers ── */
 
   const handleSelect = useCallback(
     (option: string) => {
-      const q = questions[currentStep];
+      const q = visibleQuestions[currentStep];
 
       if (q.multiSelect) {
         // For multi-select: "없음" clears others, and selecting others clears "없음"
@@ -220,7 +232,7 @@ export default function SymptomCheckPage() {
         setAnswers((prev) => ({ ...prev, [q.id]: [option] }));
       }
     },
-    [currentStep],
+    [currentStep, visibleQuestions],
   );
 
   const canProceed = currentAnswers.length > 0;
@@ -228,18 +240,26 @@ export default function SymptomCheckPage() {
   /* ── Navigation ── */
 
   const handleNext = () => {
-    if (currentStep < TOTAL_STEPS - 1) {
+    if (currentStep < totalSteps - 1) {
       setCurrentStep((s) => s + 1);
     } else {
-      // Save answers to localStorage before navigating
+      // Only save answers for visible questions (exclude skipped ones)
+      const visibleIds = new Set(visibleQuestions.map((q) => q.id));
+      const filteredAnswers: Record<string, string[]> = {};
+      Object.entries(answers).forEach(([key, values]) => {
+        if (visibleIds.has(key)) {
+          filteredAnswers[key] = values;
+        }
+      });
+
       try {
-        localStorage.setItem('symptomAnswers', JSON.stringify(answers));
+        localStorage.setItem('symptomAnswers', JSON.stringify(filteredAnswers));
       } catch {
         // ignore storage errors
       }
       // Build query params as fallback
       const params = new URLSearchParams();
-      Object.entries(answers).forEach(([key, values]) => {
+      Object.entries(filteredAnswers).forEach(([key, values]) => {
         params.set(key, values.join(','));
       });
       router.push(`/symptom-check/result?${params.toString()}`);
@@ -250,7 +270,7 @@ export default function SymptomCheckPage() {
     if (currentStep > 0) {
       setCurrentStep((s) => s - 1);
     } else {
-      router.back();
+      router.push('/');
     }
   };
 
@@ -264,10 +284,10 @@ export default function SymptomCheckPage() {
         {/* Progress bar */}
         <div style={styles.progressContainer}>
           <div style={styles.progressBarBg}>
-            <div style={styles.progressBarFill(currentStep)} />
+            <div style={styles.progressBarFill(currentStep, totalSteps)} />
           </div>
           <span style={styles.stepLabel as React.CSSProperties}>
-            {currentStep + 1}/{TOTAL_STEPS}
+            {currentStep + 1}/{totalSteps}
           </span>
         </div>
 
@@ -317,7 +337,7 @@ export default function SymptomCheckPage() {
           disabled={!canProceed}
           onClick={handleNext}
         >
-          {currentStep < TOTAL_STEPS - 1 ? '다음' : '결과 확인'}
+          {currentStep < totalSteps - 1 ? '다음' : '결과 확인'}
         </Button>
       </div>
     </div>
