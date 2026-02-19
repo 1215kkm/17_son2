@@ -321,18 +321,18 @@ export default function AddRecordPage() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '2px',
-                  fontSize: '10px',
+                  gap: '1px',
+                  fontSize: '9px',
                   color: 'var(--color-text-tertiary)',
                 }}
               >
-                <div style={{ display: 'flex', gap: '2px' }}>
+                <div style={{ display: 'flex', gap: '1px' }}>
                   {[18, 17, 16, 15, 14, 13, 12, 11].map((n) => (
                     <span
                       key={n}
                       style={{
-                        width: 24,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -351,13 +351,13 @@ export default function AddRecordPage() {
                       {n}
                     </span>
                   ))}
-                  <span style={{ width: 8 }} />
+                  <span style={{ width: 4 }} />
                   {[21, 22, 23, 24, 25, 26, 27, 28].map((n) => (
                     <span
                       key={n}
                       style={{
-                        width: 24,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -385,13 +385,13 @@ export default function AddRecordPage() {
                     margin: '1px 0',
                   }}
                 />
-                <div style={{ display: 'flex', gap: '2px' }}>
+                <div style={{ display: 'flex', gap: '1px' }}>
                   {[48, 47, 46, 45, 44, 43, 42, 41].map((n) => (
                     <span
                       key={n}
                       style={{
-                        width: 24,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -410,13 +410,13 @@ export default function AddRecordPage() {
                       {n}
                     </span>
                   ))}
-                  <span style={{ width: 8 }} />
+                  <span style={{ width: 4 }} />
                   {[31, 32, 33, 34, 35, 36, 37, 38].map((n) => (
                     <span
                       key={n}
                       style={{
-                        width: 24,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
