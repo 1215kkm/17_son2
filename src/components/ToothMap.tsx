@@ -46,7 +46,7 @@ function getToothPosition(index: number, isUpper: boolean) {
     const angle = ((198 + t * 144) * Math.PI) / 180;
     return {
       x: 160 + 118 * Math.cos(angle),
-      y: 318 + 72 * Math.sin(angle),
+      y: 248 + 72 * Math.sin(angle),
       rot: ((angle * 180) / Math.PI - 270) * 0.28,
     };
   }
@@ -54,7 +54,7 @@ function getToothPosition(index: number, isUpper: boolean) {
 
 /** Build a horseshoe-shaped gum background path */
 function buildGumPath(isUpper: boolean): string {
-  const cy = isUpper ? 52 : 318;
+  const cy = isUpper ? 52 : 248;
   const startDeg = isUpper ? 166 : 194;
   const endDeg = isUpper ? 14 : 346;
   const outerRx = 133, outerRy = 85;
@@ -227,9 +227,9 @@ export default function ToothMap({ selectedTooth, onSelectTooth, symptomTeeth }:
   };
 
   return (
-    <div style={{ width: '100%' }}>
+    <div style={{ width: '100%', maxWidth: 400, margin: '0 auto', padding: '2px 4px' }}>
       <svg
-        viewBox="0 0 320 370"
+        viewBox="0 0 320 275"
         style={{ width: '100%', height: 'auto', display: 'block' }}
         aria-label="치아맵 - 상악과 하악"
       >
@@ -241,28 +241,28 @@ export default function ToothMap({ selectedTooth, onSelectTooth, symptomTeeth }:
         <text x="160" y="16" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--color-text-secondary)">
           상악 (위턱)
         </text>
-        <text x="160" y="366" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--color-text-secondary)">
+        <text x="160" y="258" textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--color-text-secondary)">
           하악 (아래턱)
         </text>
 
         {/* ── Vertical midline ── */}
         <line
-          x1="160" y1="145" x2="160" y2="225"
+          x1="160" y1="148" x2="160" y2="162"
           stroke="var(--color-border)" strokeWidth={0.5} strokeDasharray="3,3"
         />
 
         {/* ── Side indicators ── */}
-        <text x="14" y="188" textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text-tertiary)">R</text>
-        <text x="306" y="188" textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text-tertiary)">L</text>
+        <text x="14" y="155" textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text-tertiary)">R</text>
+        <text x="306" y="155" textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-text-tertiary)">L</text>
 
         {/* ── Region labels in the gap ── */}
-        <text x="160" y="190" textAnchor="middle" fontSize="8" fill="var(--color-text-tertiary)">앞니</text>
-        <text x="113" y="180" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">송곳니</text>
-        <text x="207" y="180" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">송곳니</text>
-        <text x="82" y="190" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">소구치</text>
-        <text x="238" y="190" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">소구치</text>
-        <text x="48" y="180" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">어금니</text>
-        <text x="272" y="180" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">어금니</text>
+        <text x="160" y="156" textAnchor="middle" fontSize="8" fill="var(--color-text-tertiary)">앞니</text>
+        <text x="113" y="151" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">송곳니</text>
+        <text x="207" y="151" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">송곳니</text>
+        <text x="82" y="156" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">소구치</text>
+        <text x="238" y="156" textAnchor="middle" fontSize="7" fill="var(--color-text-tertiary)">소구치</text>
+        <text x="48" y="151" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">어금니</text>
+        <text x="272" y="151" textAnchor="middle" fontSize="7.5" fill="var(--color-text-tertiary)">어금니</text>
 
         {/* ── Tooth number labels ── */}
         {renderNumberLabels(UPPER_TEETH, true)}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import TabBar from '@/components/TabBar';
 
@@ -43,11 +44,15 @@ const magazineItems = [
    Home Page
 ──────────────────────────────────────── */
 export default function HomePage() {
+  const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
 
   return (
     <>
-      <Header />
+      <Header
+        onNotificationClick={() => router.push('/notifications')}
+        onProfileClick={() => router.push('/mypage')}
+      />
 
       <main className="page-container" style={{ background: 'var(--color-background)' }}>
         <div style={{ padding: '0 var(--spacing-xl)' }}>
@@ -115,6 +120,7 @@ export default function HomePage() {
                 {'내 증상에 딱 맞는\n맞춤형 가이드'}
               </h2>
               <button
+                onClick={() => router.push('/symptom-check')}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -205,6 +211,7 @@ export default function HomePage() {
 
           {/* ── Recent Visit Card ── */}
           <section
+            onClick={() => router.push('/records')}
             style={{
               marginTop: 'var(--spacing-xl)',
               background: 'var(--color-background-white)',
@@ -302,6 +309,7 @@ export default function HomePage() {
               {treatmentItems.map((item) => (
                 <button
                   key={item.id}
+                  onClick={() => router.push('/treatment/' + item.id)}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -394,6 +402,10 @@ export default function HomePage() {
               {magazineItems.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => router.push('/magazine/' + item.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter') router.push('/magazine/' + item.id); }}
                   style={{
                     flexShrink: 0,
                     width: 200,
@@ -488,7 +500,13 @@ export default function HomePage() {
           }}
         >
           {/* Bell icon */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div
+            onClick={() => router.push('/appointment')}
+            style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flex: 1 }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => { if (e.key === 'Enter') router.push('/appointment'); }}
+          >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
