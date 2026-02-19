@@ -229,7 +229,7 @@ export default function ToothMap({ selectedTooth, onSelectTooth, symptomTeeth }:
   return (
     <div style={{ width: '100%', maxWidth: 400, margin: '0 auto', padding: '2px 4px' }}>
       <svg
-        viewBox="0 0 320 275"
+        viewBox="-15 -5 350 290"
         style={{ width: '100%', height: 'auto', display: 'block' }}
         aria-label="치아맵 - 상악과 하악"
       >

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, BellIcon, UserIcon } from './Icons';
 
 interface HeaderProps {
@@ -8,6 +9,7 @@ interface HeaderProps {
   showBack?: boolean;
   showNotification?: boolean;
   showProfile?: boolean;
+  hasUnread?: boolean;
   onBack?: () => void;
   onNotificationClick?: () => void;
   onProfileClick?: () => void;
@@ -19,17 +21,18 @@ export default function Header({
   showBack = false,
   showNotification = true,
   showProfile = true,
+  hasUnread = true,
   onBack,
   onNotificationClick,
   onProfileClick,
   rightAction,
 }: HeaderProps) {
+  const router = useRouter();
+  const handleBack = onBack || (() => router.back());
   const styles: Record<string, React.CSSProperties> = {
     header: {
-      position: 'fixed',
+      position: 'sticky',
       top: 0,
-      left: '50%',
-      transform: 'translateX(-50%)',
       width: '100%',
       maxWidth: 'var(--max-width)',
       height: 'var(--header-height)',
@@ -130,7 +133,7 @@ export default function Header({
         {showBack ? (
           <button
             style={styles.backButton}
-            onClick={onBack}
+            onClick={handleBack}
             aria-label="뒤로가기"
           >
             <ArrowLeftIcon size={22} color="var(--color-text-primary)" />
@@ -157,7 +160,7 @@ export default function Header({
         {showNotification && (
           <button style={styles.iconButton} aria-label="알림" onClick={onNotificationClick}>
             <BellIcon size={22} color="var(--color-text-secondary)" />
-            <span style={styles.notificationDot} />
+            {hasUnread && <span style={styles.notificationDot} />}
           </button>
         )}
         {showProfile && (

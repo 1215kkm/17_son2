@@ -129,10 +129,8 @@ export default function ToothMapPage() {
       {/* ── Custom header ── */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 'var(--max-width)',
           height: 'var(--header-height)',
@@ -192,16 +190,21 @@ export default function ToothMapPage() {
       {/* ── Page body ── */}
       <div
         className="page-container-no-tab"
-        style={{ background: 'var(--color-background)' }}
+        style={{
+          background: 'var(--color-background)',
+          paddingTop: 0,
+          overflowX: 'hidden',
+        }}
       >
-        <div style={{ padding: 'var(--spacing-xl) var(--spacing-xl) 40px' }}>
+        <div style={{ padding: 'var(--spacing-lg) var(--spacing-md) 40px', maxWidth: 430, margin: '0 auto' }}>
           {/* Instructions */}
           <p
             style={{
               textAlign: 'center',
               fontSize: 'var(--font-base)',
               color: 'var(--color-text-secondary)',
-              marginBottom: 'var(--spacing-lg)',
+              marginTop: 'var(--spacing-md)',
+              marginBottom: 'var(--spacing-md)',
             }}
           >
             아픈 위치를 선택하세요
@@ -212,8 +215,9 @@ export default function ToothMapPage() {
             style={{
               background: 'var(--color-background-card)',
               borderRadius: 'var(--radius-card)',
-              padding: '12px 8px 8px',
+              padding: '12px 4px 8px',
               boxShadow: 'var(--shadow-card)',
+              overflow: 'hidden',
             }}
           >
             <ToothMap

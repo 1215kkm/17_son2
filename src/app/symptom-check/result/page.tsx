@@ -664,7 +664,7 @@ function SymptomResultContent() {
           variant="primary"
           size="lg"
           fullWidth
-          onClick={() => router.push('/find-clinic')}
+          onClick={() => router.push('/search')}
           style={{ flex: 1 }}
         >
           <MapPinIcon size={18} color="#FFFFFF" />
