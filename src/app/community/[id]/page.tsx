@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeftIcon, HeartIcon, CommentIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 /* ────────────────────────────────────────
    카테고리 색상
@@ -15,114 +16,39 @@ const categoryColors: Record<string, { bg: string; text: string }> = {
 };
 
 /* ────────────────────────────────────────
-   게시글 목업 데이터
+   타입 정의
 ──────────────────────────────────────── */
-const mockPost = {
-  id: 1,
-  category: 'review',
-  categoryLabel: '후기',
-  title: '임플란트 시술 3개월 후기 공유합니다',
-  author: '건강한치아',
-  date: '2025.01.15',
-  likes: 24,
-  isLiked: false,
-  isBookmarked: false,
-  content: `안녕하세요, 3개월 전에 어금니 임플란트를 한 30대 직장인입니다.
+interface Post {
+  id: string;
+  category: string;
+  category_label: string;
+  title: string;
+  content: string;
+  author: string;
+  likes: number;
+  comments_count: number;
+  created_at: string;
+}
 
-임플란트 하기 전에 이 커뮤니티에서 정보를 많이 얻어서, 저도 후기를 남겨봅니다.
-
-[시술 과정]
-저는 오른쪽 아래 첫째 어금니에 임플란트를 했습니다. 발치 후 2개월 정도 기다렸다가 임플란트 식립을 했고, 그 후 3개월 정도 뼈 유착 기간을 거쳐서 최종 보철물을 씌웠어요.
-
-총 기간은 약 5개월 정도 걸렸습니다.
-
-[비용]
-총 비용은 약 130만원 정도 들었어요. 병원마다 차이가 있겠지만, 저는 동네 치과에서 했고 오스템 임플란트를 사용했습니다.
-
-[통증]
-솔직히 시술 당일에는 마취 때문에 안 아팠는데, 마취 풀리고 나서 2-3일 정도는 욱신거렸어요. 진통제 먹으면 충분히 견딜 수 있는 정도였습니다.
-
-[현재 상태]
-지금은 자연치아처럼 편하게 씹을 수 있어요. 처음에 이물감이 좀 있었는데, 2주 정도 지나니까 적응됐습니다. 정말 만족하고 있습니다!
-
-임플란트 고민하시는 분들께 도움이 되셨으면 좋겠습니다. 궁금한 점 있으시면 댓글로 물어봐주세요!`,
-};
-
-/* ────────────────────────────────────────
-   댓글 목업 데이터
-──────────────────────────────────────── */
 interface Comment {
-  id: number;
+  id: string;
   author: string;
   date: string;
   content: string;
   likes: number;
-  isLiked: boolean;
   replies?: Comment[];
 }
 
-const mockComments: Comment[] = [
-  {
-    id: 1,
-    author: '치아건강맨',
-    date: '2025.01.15',
-    content: '좋은 후기 감사합니다! 저도 임플란트 고민 중인데 많이 도움이 됐어요. 혹시 시술 후에 음식 제한 같은 게 있었나요?',
-    likes: 5,
-    isLiked: false,
-    replies: [
-      {
-        id: 11,
-        author: '건강한치아',
-        date: '2025.01.15',
-        content: '시술 직후에는 부드러운 음식 위주로 먹었어요. 2주 정도 지나니까 거의 정상적으로 식사할 수 있었습니다!',
-        likes: 3,
-        isLiked: false,
-      },
-    ],
-  },
-  {
-    id: 2,
-    author: '어금니파수꾼',
-    date: '2025.01.16',
-    content: '저도 같은 부위에 임플란트 했는데 정말 공감됩니다. 처음에 이물감 있다가 적응되면 진짜 편하죠!',
-    likes: 8,
-    isLiked: false,
-  },
-  {
-    id: 3,
-    author: '치과무서워',
-    date: '2025.01.16',
-    content: '130만원이면 적당한 편인가요? 다른 병원에서는 200만원 가까이 얘기하던데... 지역이 어디신지 여쭤봐도 될까요?',
-    likes: 2,
-    isLiked: false,
-    replies: [
-      {
-        id: 31,
-        author: '건강한치아',
-        date: '2025.01.17',
-        content: '서울 외곽 지역이에요. 강남이나 도심은 좀 더 비쌀 수 있어요. 여러 군데 상담 받아보시는 걸 추천드려요!',
-        likes: 4,
-        isLiked: false,
-      },
-    ],
-  },
-  {
-    id: 4,
-    author: '스마일퀸',
-    date: '2025.01.18',
-    content: '후기 감사합니다! 오스템 임플란트가 국산 중에서 괜찮은 편이라고 들었는데, 만족도가 높으시다니 다행이네요.',
-    likes: 6,
-    isLiked: false,
-  },
-  {
-    id: 5,
-    author: '대학생이',
-    date: '2025.01.19',
-    content: '마취 풀리고 나서 아프다는 게 좀 무섭긴 한데... 진통제로 충분하다니 그래도 다행인 것 같아요. 용기 내봐야겠습니다!',
-    likes: 3,
-    isLiked: false,
-  },
-];
+/* ────────────────────────────────────────
+   날짜 포맷 유틸
+──────────────────────────────────────── */
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}.${mm}.${dd}`;
+}
 
 /* ────────────────────────────────────────
    북마크 아이콘
@@ -183,7 +109,7 @@ function CommentItem({
   comment: Comment;
   isReply?: boolean;
 }) {
-  const [liked, setLiked] = useState(comment.isLiked);
+  const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(comment.likes);
 
   const handleLike = (e: React.MouseEvent) => {
@@ -328,21 +254,262 @@ function CommentItem({
 ──────────────────────────────────────── */
 export default function PostDetailPage() {
   const router = useRouter();
-  const [liked, setLiked] = useState(mockPost.isLiked);
-  const [likeCount, setLikeCount] = useState(mockPost.likes);
-  const [bookmarked, setBookmarked] = useState(mockPost.isBookmarked);
+  const params = useParams();
+  const postId = params.id as string;
+
+  const [post, setPost] = useState<Post | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [bookmarked, setBookmarked] = useState(false);
   const [commentText, setCommentText] = useState('');
 
-  const catColor = categoryColors[mockPost.category] || categoryColors.free;
-  const totalComments = mockComments.reduce(
-    (acc, c) => acc + 1 + (c.replies?.length || 0),
-    0
-  );
+  /* ── 댓글 fetch ── */
+  const fetchComments = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true });
+
+    if (error || !data) return;
+
+    // parent comments와 replies 그룹핑
+    const parentComments: Comment[] = [];
+    const replyMap: Record<string, Comment[]> = {};
+
+    for (const row of data) {
+      const mapped: Comment = {
+        id: row.id,
+        author: row.author,
+        date: formatDate(row.created_at),
+        content: row.content,
+        likes: row.likes,
+      };
+
+      if (row.parent_id) {
+        if (!replyMap[row.parent_id]) {
+          replyMap[row.parent_id] = [];
+        }
+        replyMap[row.parent_id].push(mapped);
+      } else {
+        parentComments.push(mapped);
+      }
+    }
+
+    // replies를 parent에 연결
+    for (const parent of parentComments) {
+      if (replyMap[parent.id]) {
+        parent.replies = replyMap[parent.id];
+      }
+    }
+
+    setComments(parentComments);
+  }, [postId]);
+
+  /* ── 초기 데이터 fetch ── */
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+
+      // 게시글 fetch
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('*')
+        .eq('id', postId)
+        .single();
+
+      if (!postError && postData) {
+        setPost(postData as Post);
+        setLikeCount(postData.likes);
+      }
+
+      // 댓글 fetch
+      await fetchComments();
+
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [postId, fetchComments]);
+
+  /* ── 댓글 작성 ── */
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) return;
+
+    const { error } = await supabase
+      .from('comments')
+      .insert({
+        post_id: postId,
+        parent_id: null,
+        author: '익명',
+        content: commentText.trim(),
+        likes: 0,
+      });
+
+    if (error) return;
+
+    setCommentText('');
+
+    // 댓글 다시 fetch
+    await fetchComments();
+
+    // posts 테이블의 comments_count 업데이트
+    const { count } = await supabase
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('post_id', postId);
+
+    await supabase
+      .from('posts')
+      .update({ comments_count: count ?? 0 })
+      .eq('id', postId);
+
+    // post 상태도 업데이트
+    setPost((prev) => prev ? { ...prev, comments_count: count ?? 0 } : prev);
+  };
 
   const handleLike = () => {
     setLiked(!liked);
     setLikeCount(liked ? likeCount - 1 : likeCount + 1);
   };
+
+  /* ── 로딩 상태 ── */
+  if (loading) {
+    return (
+      <>
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            width: '100%',
+            maxWidth: 'var(--max-width)',
+            height: 'var(--header-height)',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 var(--spacing-lg)',
+            background: 'var(--color-background-white)',
+            zIndex: 200,
+            borderBottom: '1px solid var(--color-border-light)',
+            gap: 12,
+          }}
+        >
+          <button
+            onClick={() => router.back()}
+            style={{
+              width: 36,
+              height: 36,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-full)',
+              cursor: 'pointer',
+              background: 'none',
+              border: 'none',
+            }}
+            aria-label="뒤로가기"
+          >
+            <ArrowLeftIcon size={22} color="var(--color-text-primary)" />
+          </button>
+          <h1
+            style={{
+              fontSize: 'var(--font-xl)',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            게시글
+          </h1>
+        </header>
+        <main
+          className="page-container-no-tab"
+          style={{
+            background: 'var(--color-background-white)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+          }}
+        >
+          <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--font-md)' }}>
+            로딩 중...
+          </p>
+        </main>
+      </>
+    );
+  }
+
+  if (!post) {
+    return (
+      <>
+        <header
+          style={{
+            position: 'sticky',
+            top: 0,
+            width: '100%',
+            maxWidth: 'var(--max-width)',
+            height: 'var(--header-height)',
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 var(--spacing-lg)',
+            background: 'var(--color-background-white)',
+            zIndex: 200,
+            borderBottom: '1px solid var(--color-border-light)',
+            gap: 12,
+          }}
+        >
+          <button
+            onClick={() => router.back()}
+            style={{
+              width: 36,
+              height: 36,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 'var(--radius-full)',
+              cursor: 'pointer',
+              background: 'none',
+              border: 'none',
+            }}
+            aria-label="뒤로가기"
+          >
+            <ArrowLeftIcon size={22} color="var(--color-text-primary)" />
+          </button>
+          <h1
+            style={{
+              fontSize: 'var(--font-xl)',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+            }}
+          >
+            게시글
+          </h1>
+        </header>
+        <main
+          className="page-container-no-tab"
+          style={{
+            background: 'var(--color-background-white)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '60vh',
+          }}
+        >
+          <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--font-md)' }}>
+            게시글을 찾을 수 없습니다.
+          </p>
+        </main>
+      </>
+    );
+  }
+
+  const catColor = categoryColors[post.category] || categoryColors.free;
+  const totalComments = comments.reduce(
+    (acc, c) => acc + 1 + (c.replies?.length || 0),
+    0
+  );
 
   return (
     <>
@@ -414,7 +581,7 @@ export default function PostDetailPage() {
                 marginBottom: 12,
               }}
             >
-              {mockPost.categoryLabel}
+              {post.category_label}
             </span>
 
             {/* 제목 */}
@@ -427,7 +594,7 @@ export default function PostDetailPage() {
                 marginBottom: 16,
               }}
             >
-              {mockPost.title}
+              {post.title}
             </h2>
 
             {/* 작성자 정보 */}
@@ -457,7 +624,7 @@ export default function PostDetailPage() {
                   color: 'var(--color-primary)',
                 }}
               >
-                {mockPost.author.charAt(0)}
+                {post.author.charAt(0)}
               </div>
               <div>
                 <p
@@ -468,7 +635,7 @@ export default function PostDetailPage() {
                     marginBottom: 2,
                   }}
                 >
-                  {mockPost.author}
+                  {post.author}
                 </p>
                 <p
                   style={{
@@ -476,7 +643,7 @@ export default function PostDetailPage() {
                     color: 'var(--color-text-tertiary)',
                   }}
                 >
-                  {mockPost.date}
+                  {formatDate(post.created_at)}
                 </p>
               </div>
             </div>
@@ -492,7 +659,7 @@ export default function PostDetailPage() {
                 marginBottom: 24,
               }}
             >
-              {mockPost.content}
+              {post.content}
             </div>
 
             {/* 좋아요 / 북마크 */}
@@ -589,14 +756,14 @@ export default function PostDetailPage() {
 
             {/* 댓글 목록 */}
             <div>
-              {mockComments.map((comment, index) => (
+              {comments.map((comment, index) => (
                 <React.Fragment key={comment.id}>
                   <CommentItem comment={comment} />
                   {/* 대댓글 */}
                   {comment.replies?.map((reply) => (
                     <CommentItem key={reply.id} comment={reply} isReply />
                   ))}
-                  {index < mockComments.length - 1 && (
+                  {index < comments.length - 1 && (
                     <div
                       style={{
                         height: 1,
@@ -648,6 +815,11 @@ export default function PostDetailPage() {
             fontSize: 'var(--font-md)',
             color: 'var(--color-text-primary)',
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+              handleSubmitComment();
+            }
+          }}
           onFocus={(e) => {
             e.currentTarget.style.borderColor = 'var(--color-primary)';
           }}
@@ -656,6 +828,7 @@ export default function PostDetailPage() {
           }}
         />
         <button
+          onClick={handleSubmitComment}
           style={{
             width: 40,
             height: 40,

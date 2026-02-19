@@ -1,91 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Card from '@/components/Card';
 import { StarIcon } from '@/components/Icons';
+import { supabase } from '@/lib/supabase';
 
 /* ────────────────────────────────────────
-   Mock Review Data
+   Types
 ──────────────────────────────────────── */
-const overallRating = 4.8;
-const totalReviews = 312;
-const ratingDistribution = [
-  { stars: 5, count: 215, percentage: 69 },
-  { stars: 4, count: 62, percentage: 20 },
-  { stars: 3, count: 22, percentage: 7 },
-  { stars: 2, count: 8, percentage: 3 },
-  { stars: 1, count: 5, percentage: 1 },
-];
+interface Review {
+  id: string;
+  author: string;
+  rating: number;
+  date: string;
+  treatment: string;
+  text: string;
+  helpfulCount: number;
+}
 
 const sortOptions = ['최신순', '평점높은순', '평점낮은순'];
-
-const mockReviews = [
-  {
-    id: '1',
-    author: '김**',
-    rating: 5,
-    date: '2025.01.15',
-    treatment: '임플란트',
-    text: '의사 선생님이 정말 친절하시고 꼼꼼하게 설명해주셔서 안심하고 치료받았습니다. 시설도 깨끗하고 대기 시간도 짧았어요. 임플란트 수술도 생각보다 아프지 않았고 회복도 빨랐습니다.',
-    helpfulCount: 24,
-  },
-  {
-    id: '2',
-    author: '이**',
-    rating: 4,
-    date: '2025.01.10',
-    treatment: '스케일링',
-    text: '스케일링 받으러 갔는데 빠르고 깔끔하게 해주셨습니다. 다만 주차가 좀 불편했어요. 스케일링 후 관리 방법도 자세하게 알려주셔서 좋았습니다.',
-    helpfulCount: 18,
-  },
-  {
-    id: '3',
-    author: '박**',
-    rating: 5,
-    date: '2025.01.05',
-    treatment: '치아교정',
-    text: '교정 상담 받았는데 여러 옵션을 자세히 설명해주시고 강압적이지 않아서 좋았습니다. 투명교정으로 결정했는데 만족합니다.',
-    helpfulCount: 31,
-  },
-  {
-    id: '4',
-    author: '최**',
-    rating: 5,
-    date: '2024.12.28',
-    treatment: '충치치료',
-    text: '충치가 심해서 걱정했는데 레진으로 깔끔하게 치료해주셨어요. 통증도 거의 없었고 마취도 잘 해주셨습니다. 앞으로도 여기 다닐 예정입니다.',
-    helpfulCount: 15,
-  },
-  {
-    id: '5',
-    author: '정**',
-    rating: 3,
-    date: '2024.12.20',
-    treatment: '미백',
-    text: '미백 시술을 받았는데 효과는 확실하게 있었습니다. 다만 시술 후 시린 증상이 며칠간 좀 있었어요. 전반적으로는 만족합니다.',
-    helpfulCount: 8,
-  },
-  {
-    id: '6',
-    author: '한**',
-    rating: 5,
-    date: '2024.12.15',
-    treatment: '신경치료',
-    text: '다른 곳에서 신경치료를 실패해서 재치료를 받으러 왔는데, 정말 꼼꼼하게 치료해주셔서 통증이 사라졌습니다. 실력이 좋으신 것 같아요.',
-    helpfulCount: 42,
-  },
-  {
-    id: '7',
-    author: '윤**',
-    rating: 4,
-    date: '2024.12.10',
-    treatment: '크라운',
-    text: '크라운 치료를 받았는데 색상 매칭이 잘 되어서 자연스럽습니다. 직원분들도 친절하고 예약 시간에 맞게 진료해주셔서 좋았어요.',
-    helpfulCount: 11,
-  },
-];
 
 /* ────────────────────────────────────────
    Review List Page
@@ -96,6 +31,84 @@ export default function ReviewListPage() {
   const id = params.id as string;
   const [activeSort, setActiveSort] = useState('최신순');
   const [helpfulReviews, setHelpfulReviews] = useState<Record<string, boolean>>({});
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .eq('clinic_id', id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('리뷰 불러오기 실패:', error);
+          return;
+        }
+
+        const mapped: Review[] = (data || []).map((row) => ({
+          id: row.id,
+          author: row.author ?? '익명',
+          rating: row.rating,
+          date: new Date(row.created_at).toISOString().slice(0, 10).replace(/-/g, '.'),
+          treatment: row.treatment,
+          text: row.content,
+          helpfulCount: row.helpful_count ?? 0,
+        }));
+
+        setReviews(mapped);
+      } catch (err) {
+        console.error('리뷰 불러오기 실패:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [id]);
+
+  /* ── Computed values from fetched data ── */
+  const totalReviews = reviews.length;
+
+  const overallRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    return Math.round((sum / reviews.length) * 10) / 10;
+  }, [reviews]);
+
+  const ratingDistribution = useMemo(() => {
+    const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach((r) => {
+      if (counts[r.rating] !== undefined) {
+        counts[r.rating]++;
+      }
+    });
+    return [5, 4, 3, 2, 1].map((stars) => ({
+      stars,
+      count: counts[stars],
+      percentage: totalReviews > 0 ? Math.round((counts[stars] / totalReviews) * 100) : 0,
+    }));
+  }, [reviews, totalReviews]);
+
+  /* ── Sorted reviews (client-side) ── */
+  const sortedReviews = useMemo(() => {
+    const sorted = [...reviews];
+    switch (activeSort) {
+      case '최신순':
+        sorted.sort((a, b) => b.date.localeCompare(a.date));
+        break;
+      case '평점높은순':
+        sorted.sort((a, b) => b.rating - a.rating);
+        break;
+      case '평점낮은순':
+        sorted.sort((a, b) => a.rating - b.rating);
+        break;
+    }
+    return sorted;
+  }, [reviews, activeSort]);
 
   const toggleHelpful = (reviewId: string) => {
     setHelpfulReviews((prev) => ({ ...prev, [reviewId]: !prev[reviewId] }));
@@ -210,7 +223,16 @@ export default function ReviewListPage() {
 
           {/* Review Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {mockReviews.map((review) => (
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-tertiary)', fontSize: 'var(--font-md)' }}>
+                리뷰를 불러오는 중...
+              </div>
+            ) : sortedReviews.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-tertiary)', fontSize: 'var(--font-md)' }}>
+                아직 리뷰가 없습니다.
+              </div>
+            ) : (
+              sortedReviews.map((review) => (
               <Card key={review.id} padding="16px">
                 {/* Header: Author & Date */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -312,7 +334,8 @@ export default function ReviewListPage() {
                   </span>
                 </button>
               </Card>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </main>
