@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import TabBar from '@/components/TabBar';
@@ -90,6 +90,49 @@ export default function SearchPage() {
     setBookmarks((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
+  /** Parse distance string like "150m" or "1.2km" to meters */
+  const parseDistance = (d: string): number => {
+    if (d.endsWith('km')) return parseFloat(d) * 1000;
+    return parseFloat(d);
+  };
+
+  /** Parse closing hour from hours string like "09:00 - 21:00" */
+  const parseClosingHour = (hours: string): number => {
+    const parts = hours.split('-');
+    if (parts.length < 2) return 0;
+    const closing = parts[1].trim();
+    const [h] = closing.split(':').map(Number);
+    return h;
+  };
+
+  const filteredClinics = useMemo(() => {
+    // 1) Text search filter
+    const query = searchQuery.trim().toLowerCase();
+    let result = mockClinics.filter((c) => {
+      if (!query) return true;
+      return (
+        c.name.toLowerCase().includes(query) ||
+        c.address.toLowerCase().includes(query)
+      );
+    });
+
+    // 2) Special filters
+    if (activeFilter === '야간진료') {
+      result = result.filter((c) => parseClosingHour(c.hours) >= 21);
+    }
+
+    // 3) Sorting
+    if (activeFilter === '거리순') {
+      result = [...result].sort((a, b) => parseDistance(a.distance) - parseDistance(b.distance));
+    } else if (activeFilter === '평점순') {
+      result = [...result].sort((a, b) => b.rating - a.rating);
+    } else if (activeFilter === '리뷰많은순') {
+      result = [...result].sort((a, b) => b.reviewCount - a.reviewCount);
+    }
+
+    return result;
+  }, [searchQuery, activeFilter]);
+
   return (
     <>
       <Header title="치과검색" showBack={false} showNotification={false} showProfile={false} />
@@ -100,7 +143,8 @@ export default function SearchPage() {
           {/* Search Bar */}
           <div
             style={{
-              marginTop: 'var(--spacing-lg)',
+              marginTop: 'var(--spacing-xl)',
+              paddingTop: 'var(--spacing-sm)',
               position: 'relative',
             }}
           >
@@ -254,6 +298,18 @@ export default function SearchPage() {
             >
               지도 영역
             </span>
+            <span
+              style={{
+                position: 'relative',
+                zIndex: 1,
+                fontSize: 'var(--font-xs)',
+                color: 'var(--color-text-tertiary)',
+                fontWeight: 400,
+                marginTop: 2,
+              }}
+            >
+              지도 서비스 연동 예정
+            </span>
 
             {/* Current Location Button */}
             <button
@@ -309,13 +365,25 @@ export default function SearchPage() {
                 color: 'var(--color-text-tertiary)',
               }}
             >
-              총 {mockClinics.length}개
+              총 {filteredClinics.length}개
             </span>
           </div>
 
           {/* Clinic Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 20 }}>
-            {mockClinics.map((clinic) => (
+            {filteredClinics.length === 0 && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '40px 0',
+                  color: 'var(--color-text-tertiary)',
+                  fontSize: 'var(--font-base)',
+                }}
+              >
+                검색 결과가 없습니다
+              </div>
+            )}
+            {filteredClinics.map((clinic) => (
               <Card
                 key={clinic.id}
                 onClick={() => router.push(`/search/${clinic.id}`)}

@@ -160,7 +160,7 @@ export default function CommunityPage() {
           {/* ── 검색바 ── */}
           <div
             style={{
-              marginTop: 'var(--spacing-lg)',
+              marginTop: 'var(--spacing-xl)',
               marginBottom: 'var(--spacing-md)',
               position: 'relative',
             }}

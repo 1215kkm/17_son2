@@ -9,6 +9,8 @@ interface HeaderProps {
   showNotification?: boolean;
   showProfile?: boolean;
   onBack?: () => void;
+  onNotificationClick?: () => void;
+  onProfileClick?: () => void;
   rightAction?: React.ReactNode;
 }
 
@@ -18,6 +20,8 @@ export default function Header({
   showNotification = true,
   showProfile = true,
   onBack,
+  onNotificationClick,
+  onProfileClick,
   rightAction,
 }: HeaderProps) {
   const styles: Record<string, React.CSSProperties> = {
@@ -151,13 +155,13 @@ export default function Header({
       <div style={styles.rightSection}>
         {rightAction}
         {showNotification && (
-          <button style={styles.iconButton} aria-label="알림">
+          <button style={styles.iconButton} aria-label="알림" onClick={onNotificationClick}>
             <BellIcon size={22} color="var(--color-text-secondary)" />
             <span style={styles.notificationDot} />
           </button>
         )}
         {showProfile && (
-          <button style={styles.profileButton} aria-label="내 정보">
+          <button style={styles.profileButton} aria-label="내 정보" onClick={onProfileClick}>
             <UserIcon size={20} color="var(--color-primary)" />
           </button>
         )}
