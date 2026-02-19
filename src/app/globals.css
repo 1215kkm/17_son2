@@ -139,7 +139,7 @@ input, textarea, select {
 
 /* 페이지 컨테이너 (탭바 없는 경우) */
 .page-container-no-tab {
-  padding-top: var(--header-height);
+  padding-top: 0;
   min-height: 100vh;
 }
 
