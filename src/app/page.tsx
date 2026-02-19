@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import TabBar from '@/components/TabBar';
@@ -46,11 +46,24 @@ const magazineItems = [
 export default function HomePage() {
   const router = useRouter();
   const [showNotification, setShowNotification] = useState(true);
+  const [hasUnread, setHasUnread] = useState(true);
+
+  useEffect(() => {
+    const read = localStorage.getItem('notifications_read');
+    if (read === 'true') setHasUnread(false);
+  }, []);
+
+  const handleNotificationClick = () => {
+    localStorage.setItem('notifications_read', 'true');
+    setHasUnread(false);
+    router.push('/notifications');
+  };
 
   return (
     <>
       <Header
-        onNotificationClick={() => router.push('/notifications')}
+        hasUnread={hasUnread}
+        onNotificationClick={handleNotificationClick}
         onProfileClick={() => router.push('/mypage')}
       />
 
@@ -376,6 +389,7 @@ export default function HomePage() {
                 매거진
               </h3>
               <button
+                onClick={() => router.push('/magazine')}
                 style={{
                   fontSize: 'var(--font-sm)',
                   color: 'var(--color-text-tertiary)',

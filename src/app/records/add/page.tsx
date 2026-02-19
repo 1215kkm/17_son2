@@ -132,10 +132,8 @@ export default function AddRecordPage() {
       {/* Header */}
       <header
         style={{
-          position: 'fixed',
+          position: 'sticky',
           top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
           width: '100%',
           maxWidth: 'var(--max-width)',
           height: 'var(--header-height)',
